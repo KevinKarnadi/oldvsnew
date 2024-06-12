@@ -65,7 +65,7 @@ public abstract class ConstantRange {
 					(VarcharConstant) highVarchar, highIncl);
 		}
 		else if (type.getClass() == VectorType.class) {
-			return new VectorConstantRange((VectorConstant) low);
+			return new VectorConstantRange((VectorConstant) low, true, (VectorConstant) low, true);
 		}
 
 		throw new UnsupportedOperationException();

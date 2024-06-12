@@ -14,13 +14,13 @@ import java.util.PriorityQueue;
  */
 public class NearestNeighborScan implements Scan {
 
-    private static final String FIELD_ID = "i_id";
     Scan s;
     DistanceFn distFn;
     Transaction tx;
-    PriorityQueue<DistIDPair> pq;
+    private static final String FIELD = "i_id";
+    Dist current;
+    PriorityQueue<Dist> priorityQueue;
     boolean isBeforeFirsted = false;
-    DistIDPair current;
 
     public NearestNeighborScan(Scan s, DistanceFn distFn, Transaction tx) {
         this.s = s;
@@ -31,18 +31,12 @@ public class NearestNeighborScan implements Scan {
     @Override
     public void beforeFirst() {
         s.beforeFirst();
-        pq = new PriorityQueue<>((a, b) -> {
-            if (a.dist - b.dist < 0)
-                return -1;
-            else if (a.dist - b.dist > 0)
-                return 1;
-            return 0;
-        });
+        priorityQueue = new PriorityQueue<>((pair1, pair2) -> Double.compare(pair1.dist, pair2.dist));
 
         String fld = distFn.fieldName();
         while (s.next()) {
             double dist = distFn.distance((VectorConstant) s.getVal(fld));
-            pq.add(new DistIDPair(dist, s.getVal(FIELD_ID)));
+            priorityQueue.add(new Dist(dist, s.getVal(FIELD)));
         }
         isBeforeFirsted = true;
     }
@@ -51,8 +45,8 @@ public class NearestNeighborScan implements Scan {
     public boolean next() {
         if (!isBeforeFirsted)
             throw new IllegalStateException();
-        if (!pq.isEmpty()) {
-            current = pq.poll();
+        if (!priorityQueue.isEmpty()) {
+            current = priorityQueue.poll();
             return true;
         }
         return false;
@@ -65,21 +59,21 @@ public class NearestNeighborScan implements Scan {
 
     @Override
     public boolean hasField(String fldName) {
-        return fldName.equals(FIELD_ID);
+        return fldName.equals(FIELD);
     }
 
     @Override
     public Constant getVal(String fldName) {
-        if (fldName.equals(FIELD_ID)) {
+        if (fldName.equals(FIELD)) {
             return current.id;
         }
         return null;
     }
 
-    private static class DistIDPair {
+    private static class Dist {
         double dist;
         Constant id;
-        DistIDPair(double dist, Constant id) {
+        Dist(double dist, Constant id) {
             this.dist = dist;
             this.id = id;
         }

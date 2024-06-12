@@ -157,7 +157,7 @@ public class IndexSelector {
 				if (searchRange != null && (
 						(ii.indexType() == IndexType.HASH && searchRange.isConstant())
 						|| ii.indexType() == IndexType.BTREE
-						|| (ii.indexType() == IndexType.IVF && searchRange.isConstant())))
+						|| (ii.indexType() == IndexType.IVFFlat && searchRange.isConstant())))
 					ranges.put(fieldName, searchRange);
 			}
 

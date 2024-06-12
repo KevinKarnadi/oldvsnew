@@ -41,7 +41,7 @@ public class SiftTestbedLoaderProc extends StoredProcedure<SiftTestbedLoaderPara
         generateItems(0);
 
         // if (logger.isLoggable(Level.INFO))
-        //     logger.info("Training IVF index...");
+        //     logger.info("Training IVFFlat index...");
 
         // StoredProcedureUtils.executeTrainIndex(getHelper().getTableName(), getHelper().getIdxFields(), 
         //     getHelper().getIdxName(), getTransaction());

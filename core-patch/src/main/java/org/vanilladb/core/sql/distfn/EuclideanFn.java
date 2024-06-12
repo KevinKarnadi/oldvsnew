@@ -6,7 +6,7 @@ import jdk.incubator.vector.VectorSpecies;
 import org.vanilladb.core.sql.VectorConstant;
 
 public class EuclideanFn extends DistanceFn {
-    final VectorSpecies<Float> SPECIES = FloatVector.SPECIES_PREFERRED;
+    private static final VectorSpecies<Float> SPECIES = FloatVector.SPECIES_PREFERRED;
 
     public EuclideanFn(String fld) {
         super(fld);
@@ -14,28 +14,28 @@ public class EuclideanFn extends DistanceFn {
 
     @Override
     protected double calculateDistance(VectorConstant vec) {
-        var vSum = FloatVector.zero(SPECIES);
-        var upperBound = SPECIES.loopBound(this.query.dimension());
+        FloatVector sumOfSquares = FloatVector.zero(SPECIES);
+        int upperLimit = SPECIES.loopBound(this.query.dimension());
 
-        float[] leftVectorVal = this.query.asJavaVal();
-        float[] rightVectorVal = vec.asJavaVal();
+        float[] queryValues = this.query.asJavaVal();
+        float[] vectorValues = vec.asJavaVal();
 
-        for (int i = 0; i < upperBound; i += SPECIES.length()) {
-            FloatVector left = FloatVector.fromArray(SPECIES, leftVectorVal, i);
-            FloatVector right = FloatVector.fromArray(SPECIES, rightVectorVal, i);
-            FloatVector diff = left.sub(right);
-            vSum = diff.mul(diff).add(vSum);
+        for (int i = 0; i < upperLimit; i += SPECIES.length()) {
+            FloatVector queryVector = FloatVector.fromArray(SPECIES, queryValues, i);
+            FloatVector inputVector = FloatVector.fromArray(SPECIES, vectorValues, i);
+            FloatVector difference = queryVector.sub(inputVector);
+            FloatVector squaredDifference = difference.mul(difference);
+            sumOfSquares = squaredDifference.add(sumOfSquares);
         }
 
-        float dist = vSum.reduceLanes(VectorOperators.ADD);
+        float distance = sumOfSquares.reduceLanes(VectorOperators.ADD);
 
-        // remaining values
-        for (int i = upperBound; i < this.query.dimension(); i++) {
-            float diff = this.query.get(i) - vec.get(i);
-            dist += diff * diff;
+        // Process remaining elements
+        for (int i = upperLimit; i < this.query.dimension(); i++) {
+            float difference = this.query.get(i) - vec.get(i);
+            distance += difference * difference;
         }
 
-        return Math.sqrt(dist);
+        return Math.sqrt(distance);
     }
-    
 }

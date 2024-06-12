@@ -45,7 +45,7 @@ public class SiftTestbedLoaderParamHelper implements StoredProcedureHelper {
     public void prepareParameters(Object... pars) {
         numItems = (Integer) pars[0];
         TABLES_DDL[0] = "CREATE TABLE sift (i_id INT, i_emb VECTOR(" + N_DIM + "))";
-        INDEXES_DDL[0] = "CREATE INDEX idx_sift ON sift(i_emb) USING ivf";
+        INDEXES_DDL[0] = "CREATE INDEX idx_sift ON sift(i_emb) USING ivfflat";
     }
 
     @Override
